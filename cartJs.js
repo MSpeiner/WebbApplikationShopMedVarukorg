@@ -25,8 +25,7 @@ async function fetchAndProcessProducts() {
             idCounts[id] = (idCounts[id] || 0) + 1;
         });
 
-    
-        let totalPrice = 0;
+        let totalOrderPrice = 0;
 
         const varukorgCenterbox = document.getElementById('varukorg-centerbox');
 
@@ -37,15 +36,18 @@ async function fetchAndProcessProducts() {
                 const productDiv = document.createElement('div');
                 productDiv.classList.add('product');
 
+                const productTotalPrice = product.price * quantity;
+
                 const productContent = `
-                    <img src="${product.image}" alt="${product.title}" />
-                    <h3>${product.title}</h3>
-                    <p>Price: ${product.price}$</p>
-                    <p>Quantity: <span id="quantity-${product.id}">${quantity}</span></p>
-                    <input type="number" id="quantity-input-${product.id}" min="1" value="${quantity}">
-                    <br>
-                    <button type="submit" class="btn btn-danger remove-product">Remove Product</button>
-                `;
+    <img src="${product.image}" alt="${product.title}" />
+    <h3>${product.title}</h3>
+    <p>Price: ${product.price}$</p>
+    <p>Quantity: <span id="quantity-${product.id}">${quantity}</span></p>
+    <p id="total-price-${product.id}">Total Price for this product: ${productTotalPrice}$</p>
+    <input type="number" id="quantity-input-${product.id}" min="1" value="${quantity}">
+    <br>
+    <button type="submit" class="btn btn-danger remove-product">Remove Product</button>
+`;
 
                 productDiv.innerHTML = productContent;
 
@@ -54,7 +56,8 @@ async function fetchAndProcessProducts() {
                     title: product.title,
                     image: product.image,
                     price: product.price,
-                    quantity: quantity
+                    quantity: quantity,
+                    totalProductPrice: productTotalPrice // Include total price per product in matchedProducts array
                 });
 
                 varukorgCenterbox.appendChild(productDiv);
@@ -70,8 +73,12 @@ async function fetchAndProcessProducts() {
                     const matchedProductIndex = matchedProducts.findIndex(matchedProduct => matchedProduct.id === product.id);
                     if (matchedProductIndex !== -1) {
                         matchedProducts[matchedProductIndex].quantity = newQuantity;
+                        matchedProducts[matchedProductIndex].totalProductPrice = product.price * newQuantity;
                     }
                     
+
+                    const totalPriceElement = document.getElementById(`total-price-${product.id}`);
+                    totalPriceElement.textContent = `Total Price for this product: ${matchedProducts[matchedProductIndex].totalProductPrice}$`;
                 
                     selectedProductIds = selectedProductIds.filter(id => id !== product.id);
                     for (let i = 0; i < newQuantity; i++) {
@@ -80,9 +87,8 @@ async function fetchAndProcessProducts() {
                     localStorage.setItem('selectedProductIds', JSON.stringify(selectedProductIds));
                 });
 
-                totalPrice += product.price * quantity;
+                totalOrderPrice += productTotalPrice;
 
-                
                 const removeButton = productDiv.querySelector('.remove-product');
                 removeButton.addEventListener('click', () => {
                     const indexToRemove = matchedProducts.findIndex(item => item.id === product.id);
@@ -98,24 +104,21 @@ async function fetchAndProcessProducts() {
             }
         });
 
-        
-
-
         const totalPriceDiv = document.createElement('div');
         totalPriceDiv.classList.add('total-summary', 'total-price');
-        totalPriceDiv.innerHTML = `<p>Totalt pris för alla produkter: ${totalPrice}$</p>`;
+        totalPriceDiv.innerHTML = `<p>Totalt pris för alla produkter: ${totalOrderPrice}$</p>`;
         varukorgCenterbox.appendChild(totalPriceDiv);
 
         function updateTotalPrice() {
-            totalPrice = 0;
+            totalOrderPrice = 0;
             productList.forEach(product => {
                 const quantity = idCounts[product.id] || 0;
                 if (quantity > -1) {
-                    totalPrice += product.price * quantity;
+                    totalOrderPrice += product.price * quantity;
                 }
             });
         
-            totalPriceDiv.innerHTML = `<p>Totalt pris för alla produkter: ${totalPrice.toFixed(2)}$</p>`;
+            totalPriceDiv.innerHTML = `<p>Totalt pris för alla produkter: ${totalOrderPrice.toFixed(2)}$</p>`;
         }
 
         return matchedProducts;
@@ -194,7 +197,7 @@ clearButton.addEventListener('click', function() {
     const quantityInputs = document.querySelectorAll('input[type="number"]');
     quantityInputs.forEach(input => {
         input.value = 0;
-        const productId = input.id.split('-')[2]; // Extrakta produktens id från inputens id-attribut
+        const productId = input.id.split('-')[2];
         const quantitySpan = document.getElementById(`quantity-${productId}`);
         quantitySpan.textContent = 0;
         const matchedProductIndex = matchedProducts.findIndex(product => product.id === productId);
