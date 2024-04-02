@@ -39,15 +39,15 @@ async function fetchAndProcessProducts() {
                 const productTotalPrice = product.price * quantity;
 
                 const productContent = `
-    <img src="${product.image}" alt="${product.title}" />
-    <h3>${product.title}</h3>
-    <p>Price: ${product.price}$</p>
-    <p>Quantity: <span id="quantity-${product.id}">${quantity}</span></p>
-    <p id="total-price-${product.id}">Total Price for this product: ${productTotalPrice}$</p>
-    <input type="number" id="quantity-input-${product.id}" min="1" value="${quantity}">
-    <br>
-    <button type="submit" class="btn btn-danger remove-product">Remove Product</button>
-`;
+                <img src="${product.image}" alt="${product.title}" />
+                <h3>${product.title}</h3>
+                <p>Price: ${product.price}$</p>
+                <p>Quantity: <span id="quantity-${product.id}">${quantity}</span></p>
+                <p id="total-price-${product.id}">Total Price for this product: ${productTotalPrice}$</p>
+                <input type="number" id="quantity-input-${product.id}" min="1" value="${quantity}">
+                <br>
+                <button type="submit" class="btn btn-danger remove-product">Remove Product</button>
+                `;
 
                 productDiv.innerHTML = productContent;
 
@@ -57,7 +57,7 @@ async function fetchAndProcessProducts() {
                     image: product.image,
                     price: product.price,
                     quantity: quantity,
-                    totalProductPrice: productTotalPrice // Include total price per product in matchedProducts array
+                    totalProductPrice: productTotalPrice
                 });
 
                 varukorgCenterbox.appendChild(productDiv);
